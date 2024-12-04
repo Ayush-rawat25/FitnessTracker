@@ -61,11 +61,15 @@ public class UserDAOImpl implements UserDAO {
     }
 
     @Override
-    public void deleteWorkout(int id) throws SQLException {
+    public String deleteWorkout(int id) throws SQLException {
         String sql = "DELETE FROM workouts WHERE id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, id);
             stmt.executeUpdate();
+            int rowsAffected = stmt.executeUpdate();
+            return rowsAffected > 0 ? "User deleted successfully." : "User deletion failed.";
+        } catch (SQLException e) {
+            return "Error: " + e.getMessage();
         }
     }
     

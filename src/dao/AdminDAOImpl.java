@@ -78,7 +78,7 @@ public class AdminDAOImpl implements AdminDAO {
                int rowsAffected = stmt.executeUpdate();
                return rowsAffected > 0 ? "Feedback Send successfully." : "Feedback failed to reach.";
            } catch (SQLException e) {
-               return "Error: " + e.getMessage();
+               return "Error: Can't Update to Non-Existing Users " ;
            }
     }
 
