@@ -8,6 +8,7 @@ public class AdminDAOImpl implements AdminDAO {
     public AdminDAOImpl(Connection connection) {
         this.connection = connection;
     }
+    // Add Challenge
     @Override
     public void addChallenge(Challenge challenge) throws SQLException{
     	String sql = "INSERT INTO Challenges (name, description) VALUES (?, ?)";
@@ -17,7 +18,7 @@ public class AdminDAOImpl implements AdminDAO {
             stmt.executeUpdate();
         }
     }
-    // User Management
+    // Create User
     @Override
     public int createUser(String name, String email, String password) throws SQLException {
     	int userId=-1;
@@ -38,7 +39,7 @@ public class AdminDAOImpl implements AdminDAO {
         } 
 		return userId;
     }
-
+    // Update User
     @Override
     public String updateUser(int id, String name, String email, String password) throws SQLException{
         String query = "UPDATE Users SET name = ?, email = ?, password = ? WHERE id = ?";
@@ -54,7 +55,7 @@ public class AdminDAOImpl implements AdminDAO {
             return "Error: " + e.getMessage();
         }
     }
-
+    // Delete User
     @Override
     public String deleteUser(int id) throws SQLException {
         String query = "DELETE FROM Users WHERE id = ?";
@@ -67,7 +68,7 @@ public class AdminDAOImpl implements AdminDAO {
             return "Error: " + e.getMessage();
         }
     }
-    
+    // Feedback To Users
     @Override
     public String userInteraction(int User_id, String Feedback) throws SQLException{
     	String query="INSERT INTO Feedback (User_id, Feedback) Values (?, ?)";
@@ -83,6 +84,8 @@ public class AdminDAOImpl implements AdminDAO {
     }
 
     // Fitness Content Management
+    
+    // View All Workout
     @Override
     public List<Workout> getAllWorkouts() throws SQLException {
         List<Workout> workouts = new ArrayList<>();

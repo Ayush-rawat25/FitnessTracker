@@ -12,39 +12,42 @@ public class FitnessApp {
     private static boolean validateUser(String name, String password) {
         boolean isValid = false;
 
-        // Validate inputs
         if (name == null || name.isEmpty() || password == null || password.isEmpty()) {
             System.out.println("Username and password cannot be empty.");
             return false;
         }
 
         try {
-            // Establish database connection
             Connection connection = DatabaseConnection.getConnection();
 
-            // Prepare the SQL query to check the user's credentials
-            String sql = "SELECT * FROM users WHERE name = ? AND password = ?";
-            PreparedStatement statement = connection.prepareStatement(sql);
-            statement.setString(1, name);
-            statement.setString(2, password);
+            try {
+                String sql = "SELECT * FROM users WHERE name = ? AND password = ?";
+                PreparedStatement statement = connection.prepareStatement(sql);
+                statement.setString(1, name);
+                statement.setString(2, password);
 
-            // Execute the query
-            ResultSet resultSet = statement.executeQuery();
+                ResultSet resultSet = statement.executeQuery();
 
-            // Check if any record was returned
-            if (resultSet.next()) {
-                isValid = true;
-                loggedInUserId = resultSet.getInt("id");
-            } else {
-                System.out.println("Invalid username or password.");
+                if (resultSet.next()) {
+                    isValid = true;
+                    loggedInUserId = resultSet.getInt("id");
+                } else {
+                    System.out.println("Invalid username or password.");
+                }
+
+                resultSet.close();
+                statement.close();
+            } catch (SQLException e) {
+                System.out.println("Error executing query: " + e.getMessage());
+                e.printStackTrace();
+            } finally {
+                connection.close();
             }
-
-            // Close resources
-            resultSet.close();
-            statement.close();
-            connection.close();
         } catch (SQLException e) {
-            System.out.println("Database error: " + e.getMessage());
+            System.out.println("Database connection error: " + e.getMessage());
+            e.printStackTrace();
+        } catch (Exception e) {
+            System.out.println("Unexpected error: " + e.getMessage());
             e.printStackTrace();
         }
 
@@ -55,15 +58,15 @@ public class FitnessApp {
     private static boolean isValidEmail(String email) {
         String emailRegex = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
         Pattern pattern = Pattern.compile(emailRegex);
-        Matcher matcher = pattern.matcher(email);
-        return matcher.matches();
+        return email != null && pattern.matcher(email).matches();
     }
 
     // Main method
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        try (Connection connection = DatabaseConnection.getConnection()) {
+        try {
+            Connection connection = DatabaseConnection.getConnection();
             AdminDAO adminService = new AdminDAOImpl(connection);
 
             while (true) {
@@ -76,24 +79,20 @@ public class FitnessApp {
                 scanner.nextLine();  // Consume the newline character
 
                 if (choice == 1) {
-                    // Admin login functionality
                     String inputUsername = "";
                     String inputPassword = "";
 
-                    // Loop for valid admin credentials
                     while (true) {
                         System.out.print("Enter your username: ");
                         inputUsername = scanner.nextLine();
                         System.out.print("Enter your password: ");
                         inputPassword = scanner.nextLine();
 
-                        // Validate inputs
                         if (inputUsername.isEmpty() || inputPassword.isEmpty()) {
                             System.out.println("Username and password cannot be empty.");
                         } else if (inputUsername.equals("Admin") && inputPassword.equals("Admin1234")) {
                             System.out.println("Login successful! Welcome!");
 
-                            // Admin Dashboard loop
                             while (true) {
                                 System.out.println("\nAdmin Dashboard:");
                                 System.out.println("1. Create User");
@@ -111,31 +110,26 @@ public class FitnessApp {
 
                                 if (adminChoice == 8) {
                                     System.out.println("Exiting...");
-                                    break; // Exit the admin dashboard loop
+                                    break;
                                 }
 
-                                // Handle other options here
-                                // For now, just print the selected option
                                 System.out.println("You selected option " + adminChoice);
                             }
-
-                            break; // Exit the admin login loop
+                            break;
                         } else {
                             System.out.println("Invalid username or password. Please try again.");
                         }
                     }
                 } else if (choice == 2) {
-                    // User functionality (same as before)
                     System.out.println("Welcome to the Fitness Tracker App!");
                     System.out.println("Press 1 for Sign up");
                     System.out.println("Press 2 for Login");
 
                     int userChoice = scanner.nextInt();
-                    scanner.nextLine();  // Consume the newline character
+                    scanner.nextLine();
 
                     switch (userChoice) {
                         case 1:
-                            // Sign up process with validation
                             String name = "";
                             String email = "";
                             String pass = "";
@@ -162,21 +156,23 @@ public class FitnessApp {
                                     continue;
                                 }
 
-                                // Proceed to create user
-                                loggedInUserId = adminService.createUser(name, email, pass);
-                                if (loggedInUserId != -1) {
-                                    System.out.println("Sign up successful! Welcome, " + name);
-                                    User user = new User();
-                                    user.main(new int[]{loggedInUserId});
-                                    break;
-                                } else {
-                                    System.out.println("User registration failed. Please try again.");
+                                try {
+                                    loggedInUserId = adminService.createUser(name, email, pass);
+                                    if (loggedInUserId != -1) {
+                                        System.out.println("Sign up successful! Welcome, " + name);
+                                        User user = new User();
+                                        user.main(new int[]{loggedInUserId});
+                                        break;
+                                    } else {
+                                        System.out.println("User registration failed. Please try again.");
+                                    }
+                                } catch (SQLException e) {
+                                    System.out.println("Error creating user: " + e.getMessage());
+                                    e.printStackTrace();
                                 }
                             }
                             break;
-
                         case 2:
-                            // Login process with validation
                             String Username = "";
                             String Password = "";
 
@@ -191,7 +187,6 @@ public class FitnessApp {
                                     continue;
                                 }
 
-                                // Check if the entered credentials match
                                 if (validateUser(Username, Password)) {
                                     System.out.println("Login successful! Welcome!");
                                     User users = new User();
@@ -202,13 +197,12 @@ public class FitnessApp {
                                 }
                             }
                             break;
-
                         default:
                             System.out.println("Invalid choice. Please press 1 or 2.");
                     }
-                }else if(choice == 3) {
-                	System.out.println("Exiting....");
-                	break;
+                } else if (choice == 3) {
+                    System.out.println("Exiting....");
+                    break;
                 } else {
                     System.out.println("Invalid choice. Please press 1 or 2.");
                 }
@@ -217,7 +211,7 @@ public class FitnessApp {
             System.out.println("Database connection error: " + e.getMessage());
             e.printStackTrace();
         } finally {
-            scanner.close();  // Close scanner after all processes are complete
+            scanner.close();
         }
     }
 }

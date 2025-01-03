@@ -8,7 +8,7 @@ public class UserDAOImpl implements UserDAO {
     public UserDAOImpl(Connection connection) {
         this.connection = connection;
     }
-    
+    // Add Workout
     @Override
     public void addWorkout(Workout workout) throws SQLException {
         String sql = "INSERT INTO workouts (user_id, workout_type, duration, calories_burned, date) VALUES (?, ?, ?, ?, ?)";
@@ -22,7 +22,7 @@ public class UserDAOImpl implements UserDAO {
         }
     }
 
-    
+    // Get Workout by ID
     @Override
     public List <Workout> getWorkoutById(int user_id) throws SQLException {
     	List<Workout> workouts = new ArrayList<>();
@@ -45,7 +45,7 @@ public class UserDAOImpl implements UserDAO {
         }
         return workouts;
     }
-
+    // Update Workout
     @Override
     public void updateWorkout(Workout workout) throws SQLException {
         String sql = "UPDATE workouts SET user_id= ?, workout_type = ?, duration = ?, calories_burned = ?, date = ? WHERE id = ?";
@@ -59,7 +59,7 @@ public class UserDAOImpl implements UserDAO {
             stmt.executeUpdate();
         }
     }
-
+    // Delete Workout
     @Override
     public String deleteWorkout(int id) throws SQLException {
         String sql = "DELETE FROM workouts WHERE id = ?";
@@ -72,7 +72,7 @@ public class UserDAOImpl implements UserDAO {
             return "Error: " + e.getMessage();
         }
     }
-    
+    // View Progress
     @Override
     public void viewProgress(int userId) {
         String query = "SELECT workout_type, SUM(duration) as total_duration FROM Workouts WHERE user_id = ? GROUP BY workout_type";
@@ -89,6 +89,7 @@ public class UserDAOImpl implements UserDAO {
             System.out.println("Error: " + e.getMessage());
         }
     }
+    // Show Challenges
     @Override
     public List<Challenge> showChallenges() throws SQLException {
         List<Challenge> challenges = new ArrayList<>();
@@ -105,7 +106,7 @@ public class UserDAOImpl implements UserDAO {
         }
         return challenges;
     }
-    
+    // Join Challenge
     @Override
     public String joinChallenge(int userId, int challengeId) {
         String query = "INSERT INTO UserChallenges (user_id, challenge_id) VALUES (?, ?)";
@@ -119,7 +120,7 @@ public class UserDAOImpl implements UserDAO {
             return "Error: " + e.getMessage();
         }
     }
-    
+    // Show Participated/Finished Challenges
     @Override
     public void displayChallengeHistory(int userId) {
         String query = "SELECT c.name, uc.joined_at FROM UserChallenges uc INNER JOIN Challenges c ON uc.challenge_id = c.id WHERE uc.user_id = ?";
@@ -136,6 +137,7 @@ public class UserDAOImpl implements UserDAO {
             System.out.println("Error: " + e.getMessage());
         }
     }
+    // View Your Review
     @Override 
     public List<String> viewReview(int User_id) throws SQLException{
     	List<String> feedbacks = new ArrayList<>();
